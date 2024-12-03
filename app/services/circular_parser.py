@@ -2,7 +2,6 @@ import pdfplumber
 from openai import OpenAI
 import json
 import os
-from dotenv import load_dotenv
 
 # Initialize OpenAI client
 client = OpenAI()
@@ -10,20 +9,23 @@ client = OpenAI()
 # Function to process the circular document and extract relevant information
 def process_circular(filepath):
     text = extract_text_from_pdf(filepath)
-    extracted_data = parse_with_gpt4(text)  # This should already be a dict
+    extracted_data = parse_with_gpt4(text)
 
-    # No need to call json.loads on extracted_data since it's already a dictionary
     if extracted_data:
         parsed_data = extracted_data
     else:
         parsed_data = {}
 
-    # Ensure the parsed data has all required fields
     return {
         "regulator_name": parsed_data.get("regulator_name", ""),
         "method_of_communication": parsed_data.get("method_of_communication", ""),
         "business_process_status": parsed_data.get("business_process_status", ""),
-        "affected_business_process": parsed_data.get("affected_business_process", "")
+        "affected_business_process": parsed_data.get("affected_business_process", ""),
+        "ai_summary":parsed_data.get("ai_summary",""),
+        "common_tags":parsed_data.get("common_tags",""),
+        "Issued":parsed_data.get("Issued",""),
+        "Due":parsed_data.get("Due",""),
+        "Title":parsed_data.get("Title","")
     }
 
 # Function to extract text from the PDF
@@ -45,6 +47,11 @@ def parse_with_gpt4(text):
         2. Method of Communication (e.g., Letter, Circular, Email, etc.)
         3. Business Process Compliance Status (e.g., Compliant, Non-compliant, Action Required)
         4. Affected Business Process (e.g., Asset Management, Compliance, Risk Management, etc.)
+        5. ai_summary of this circular with date and with important information
+        6. common single tag
+        7. Issued On
+        8. Due On
+        9. Title of this Circular
 
         Document:
         {text}
@@ -54,6 +61,11 @@ def parse_with_gpt4(text):
         - "method_of_communication"
         - "business_process_status"
         - "affected_business_process"
+        - "ai_summary"
+        - "common_tags"
+        - "Issued"
+        - "Due"
+        - "Title"
         """},
     ]
 
