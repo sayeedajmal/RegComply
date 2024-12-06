@@ -111,7 +111,7 @@ const CircularStrip = ({ Circular }) => {
                   </td>
                   <td className="border-l-2 border-[#8df8f6] px-6 py-4 justify-items-center">
                     <h3 className="rounded-full border-2 border-[#1a9e9c] text-center p-2 text-[10px] w-fit font-mono text-[#2c3e50] uppercase">
-                      {clause.department}
+                      {clause.departments}
                     </h3>
                   </td>
                 </tr>

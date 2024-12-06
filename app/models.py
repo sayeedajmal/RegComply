@@ -21,7 +21,7 @@ class Clause(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(1000), nullable=False)
     actionable = db.Column(db.String(1000), nullable=False)
-    department = db.Column(db.String(1000), nullable=False)
+    departments = db.Column(db.String(1000), nullable=False)
     circular_id = db.Column(db.String(1000), db.ForeignKey(
         'circular.id'), nullable=False)
 
