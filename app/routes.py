@@ -2,12 +2,17 @@ from flask import Blueprint, request, jsonify
 from .models import db, Circular, Clause
 from .services.circular_parser import process_circular
 import os
+from flask import send_from_directory
 
 main_routes = Blueprint("main_routes", __name__)
 
-UPLOAD_FOLDER = "/tmp/uploads"  # Temporary directory for file uploads
+UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
+@main_routes.route('/')
+def serve_react():
+    return send_from_directory(os.path.join(os.getcwd(), 'app/static'), 'index.html')
 
 @main_routes.route("/upload", methods=["POST"])
 def upload_circular():

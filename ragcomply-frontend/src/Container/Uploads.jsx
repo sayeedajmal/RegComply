@@ -37,14 +37,17 @@ function Uploads() {
           },
         });
 
-        if (response.status !== 200) {
+        console.log("<<<<<<<<<, "+response.status);
+        if (response.status !== 201) {
           throw new Error("File upload failed");
         }
 
+        
         setUploadUrl(response.data.uploadUrl);
 
         alert(`File uploaded: ${file.name}`);
       } catch (error) {
+        console.log("<<<<<<<<<, "+error.message);
         setError("Error uploading file: " + error.message);
       } finally {
         setIsUploading(false);

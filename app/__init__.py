@@ -8,7 +8,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__,static_folder="static")
     CORS(app)  # Enable CORS
 
     # Load configuration from config.py
