@@ -5,7 +5,7 @@ import os
 
 main_routes = Blueprint("main_routes", __name__)
 
-UPLOAD_FOLDER = "/mnt/data/uploads"
+UPLOAD_FOLDER = "/tmp/uploads"  # Temporary directory for file uploads
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
