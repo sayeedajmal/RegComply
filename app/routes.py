@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .models import db, Circular
+from .models import db, Circular, Clause
 from .services.circular_parser import process_circular
 import os
 
@@ -28,6 +28,7 @@ def upload_circular():
     circular = Circular(
         filename=file.filename, # type: ignore
         regulator_name=parsed_data["regulator_name"],  # type: ignore
+        id=parsed_data["circular_number"], # type: ignore
         method_of_communication=parsed_data["method_of_communication"],# type: ignore
         business_process_status=parsed_data["business_process_status"], # type: ignore
         affected_business_process=parsed_data["affected_business_process"],# type: ignore
@@ -42,17 +43,46 @@ def upload_circular():
     db.session.add(circular)
     db.session.commit()
 
+    # Process and save clauses if they exist
+    clauses = parsed_data.get('clauses', [])
+    if clauses:
+        for clause in clauses:
+            new_clause = Clause(
+                content=clause.get('content', ''),  # type: ignore
+                actionable=clause.get('actionable', ''),  # type: ignore
+                department=clause.get('department', ''),  # type: ignore
+                circular_id=circular.id  # type: ignore
+            )
+            db.session.add(new_clause)
+
+        # Commit the transaction to save clauses
+        db.session.commit()
+
     return jsonify({
         "message": "Circular uploaded successfully!",
         "data": parsed_data
-    })
+    }), 201
 
 
 @main_routes.route("/circulars", methods=["GET"])
 def get_circulars():
+    # Fetch all circulars and their associated clauses
     circulars = Circular.query.all()
-    circular_list = [
-        {
+    
+    circular_list = []
+    
+    for circular in circulars:
+        # Fetch the clauses for each circular
+        clauses = [
+            {
+                "content": clause.content,
+                "actionable": clause.actionable,
+                "department": clause.department
+            }
+            for clause in circular.clauses  # Access the related clauses
+        ]
+        
+        circular_list.append({
             "id": circular.id,
             "filename": circular.filename,
             "regulator_name": circular.regulator_name,
@@ -63,11 +93,27 @@ def get_circulars():
             "common_tags": circular.common_tags,
             "Issued": circular.Issued,
             "Due": circular.Due,
-            "Title": circular.Title
-        }
-        for circular in circulars
-    ]
+            "Title": circular.Title,
+            "clauses": clauses  # Add clauses to the response
+        })
+    
     return jsonify(circular_list)
+
+@main_routes.route("/circular-status", methods=["GET"])
+def circular_status():
+    # Count circulars by business process status
+    compliant_count = Circular.query.filter_by(
+        business_process_status="Compliant").count()
+    non_compliant_count = Circular.query.filter_by(
+        business_process_status="Non-compliant").count()
+    action_required_count = Circular.query.filter_by(
+        business_process_status="Action Required").count()
+
+    return jsonify({
+        "compliant": compliant_count,
+        "non_compliant": non_compliant_count,
+        "action_required": action_required_count
+    })
 
 
 @main_routes.route("/circulars/search", methods=["GET"])
@@ -137,19 +183,23 @@ def search_circulars():
 
 @main_routes.route("/dashboard", methods=["GET"])
 def dashboard_data():
+    # Count of total circulars
     total_circulars = Circular.query.count()
-    compliant_count = Circular.query.filter_by(
-        business_process_status="Compliant").count()
-    non_compliant_count = Circular.query.filter_by(
-        business_process_status="Non-compliant").count()
+
+    # Count of circulars by business process status
     pending_count = Circular.query.filter_by(
         business_process_status="Action Required").count()
+    # Fetch the most recent circular based on 'Issued' date or 'id' (latest entry)
+    # You can also order by 'Issued' if needed
+    last_circular = Circular.query.order_by(Circular.id.desc()).first()
+
+    # If there's at least one circular, get the Title of the most recent one
+    last_circular_title = last_circular.Title if last_circular else "No circulars available"
 
     return jsonify({
         "total_circulars": total_circulars,
-        "compliant": compliant_count,
-        "non_compliant": non_compliant_count,
-        "pending": pending_count
+        "pending": pending_count,
+        "last_title": last_circular_title  # Add the Title of the last circular
     })
 
 
