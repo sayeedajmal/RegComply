@@ -55,7 +55,7 @@ def upload_circular():
             new_clause = Clause(
                 content=clause.get('content', ''),  # type: ignore
                 actionable=clause.get('actionable', ''),  # type: ignore
-                department=clause.get('department', ''),  # type: ignore
+                departments=clause.get('departments', ''),  # type: ignore
                 circular_id=circular.id  # type: ignore
             )
             db.session.add(new_clause)
@@ -82,7 +82,7 @@ def get_circulars():
             {
                 "content": clause.content,
                 "actionable": clause.actionable,
-                "department": clause.department
+                "departments": clause.departments
             }
             for clause in circular.clauses  # Access the related clauses
         ]
